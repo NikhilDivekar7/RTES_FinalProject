@@ -5,23 +5,24 @@ CC=g++
 CDEFS=
 CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS)
 LIBS= 
-CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video -lrt -lsqlite3
+CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video -lrt -lsqlite3 -lpthread
 
 HFILES= 
 CFILES= 
-CPPFILES= facedetect.cpp
+CPPFILES= smartcart.cpp
 
 SRCS= ${HFILES} ${CFILES}
 CPPOBJS= ${CPPFILES:.cpp=.o}
 
-all:	facedetect
+all:	smartcart
 
-clean:
+clean:	
+	rm smartcart
 
 distclean:
 	-rm -f *.o *.d
 
-facedetect: facedetect.o
+smartcart: smartcart.o
 	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $@.o `pkg-config --libs opencv` $(CPPLIBS)
 
 depend:
