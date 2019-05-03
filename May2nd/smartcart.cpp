@@ -141,7 +141,7 @@ void *Sequencer(void *threadp)
 {
 	printf("Here seq\n");
     struct timeval current_time_val;
-    struct timespec delay_time = {0,33333333}; // delay for 33.33 msec, 30 Hz
+    struct timespec delay_time = {0,200000000}; // delay for 100 msec, 10 Hz
     struct timespec remaining_time;
 
     double current_time;
@@ -217,16 +217,17 @@ struct timeval current_time_val;
         {
 	    //sem_wait(&semS3);
 	    sem_wait(&semS1);
-	    //gettimeofday(&current_time_val, (struct timezone *)0);
+	    gettimeofday(&current_time_val, (struct timezone *)0);
 	    //printf("Service 1 starts @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
-	    printf("In service 1\n");
+	    //printf("In service 1\n");
             capture >> frame;
             if( frame.empty() )
             pthread_exit(NULL);
 	    char c = (char)waitKey(10);
   	    if( c == 27 || c == 'q' || c == 'Q' )
-	    pthread_exit(NULL);
-  	    //gettimeofday(&current_time_val, (struct timezone *)0);
+		break;
+	    //pthread_exit(NULL);
+  	    gettimeofday(&current_time_val, (struct timezone *)0);
 	    //printf("Service 1 stop @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 	    //sem_post(&semS3);
         }
@@ -242,11 +243,14 @@ sem_post(&semS3);
 		sem_wait(&semS2);
 		//sem_wait(&semS3);
 		//printf("Service 2 @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
-		    //printf("In service 2\n");
+		 //   printf("In service 2\n");
+		    usleep(10000);
 		    detectAndDraw( frame, cascade, nestedCascade, thirdCascade, scale, tryflip );
+		    
 		    char c = (char)waitKey(10);
 		    if( c == 27 || c == 'q' || c == 'Q' )
-		    pthread_exit(NULL);
+			break;
+		    //pthread_exit(NULL);
 		//sem_post(&semS3);
 	}
 }
@@ -319,6 +323,11 @@ initCamera();
 		printf("Unsuccessful in setting thread realtime prio\n");
 		return 1;     
 	}
+	 cpu_set_t allcpuset;
+ 	CPU_ZERO(&allcpuset);
+
+   	for(i=0; i < 2; i++)
+      	CPU_SET(i, &allcpuset);
 
 	for(int i = 0; i < NUM_THREADS; i++)
 	{
@@ -366,6 +375,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
                     CascadeClassifier& nestedCascade, CascadeClassifier& thirdCascade,
                     double scale, bool tryflip )
 {
+    static int iterationCnt = 0;
     double t = 0;
     vector<Rect> faces, faces2,faces3, faces4;
     const static Scalar colors[] =
@@ -408,7 +418,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
         }
     }
     t = (double)getTickCount() - t;
-    printf( "detection time = %g ms\n", t*1000/getTickFrequency());
+    //printf( "detection time = %g ms\n", t*1000/getTickFrequency());
     if(faces.size() <= 0)
     {
 	/*printf("No monster\n");
@@ -446,7 +456,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
             rectangle( img, Point(cvRound(r.x*scale), cvRound(r.y*scale)),
                        Point(cvRound((r.x + r.width-1)*scale), cvRound((r.y + r.height-1)*scale)),
                        color, 3, 8, 0);
-	    printf("Monster detected\n");
+	    //printf("Monster detected\n");
 		total_price += monsterPrice;
 		countval = 10;
 	    putText(img, "Monster", Point(cvRound((r.x + r.width-1)*scale), cvRound((r.y + r.height-1)*scale - 5)), FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0,255,0), 2.0);
@@ -499,7 +509,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
         }
     }
     t = (double)getTickCount() - t;
-    printf( "detection time = %g ms\n", t*1000/getTickFrequency());
+    //printf( "detection time = %g ms\n", t*1000/getTickFrequency());
     if(faces3.size() <= 0)
     {
 	/*printf("No redbull\n");
@@ -633,7 +643,11 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
             circle( img, center, radius, color, 3, 8, 0 );
         }*/
     //}
+	if(iterationCnt % 10 == 0)
+	{
 	printf("Total price: %d\n", total_price);
+	iterationCnt = 0;
+	}
     imshow( "result", img );
 	//usleep(10000);
 	total_price = 0;
