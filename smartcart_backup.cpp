@@ -68,7 +68,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
 
 void initCamera()
 {
-	if( inputName.empty() || (isdigit(inputName[0]) && inputName.size() == 1) )
+	/*if( inputName.empty() || (isdigit(inputName[0]) && inputName.size() == 1) )
       	{
         	int camera = inputName.empty() ? 0 : inputName[0] - '0';
         	if(!capture.open(camera))
@@ -88,7 +88,7 @@ void initCamera()
                 		exit(1);
             		}
         	}
-    	}
+    	}*/
 
     	if( capture.isOpened() )
     	{
@@ -115,26 +115,14 @@ void initCamera()
 
 static void help()
 {
-    cout << "\nThis program demonstrates the use of cv::CascadeClassifier class to detect objects (Face + eyes). You can use Haar or LBP features.\n"
-            "This classifier can recognize many kinds of rigid objects, once the appropriate classifier is trained.\n"
-            "It's most known use is for faces.\n"
-            "Usage:\n"
-            "./facedetect [--cascade=<cascade_path> this is the primary trained classifier such as frontal face]\n"
-               "   [--nested-cascade[=nested_cascade_path this an optional secondary classifier such as eyes]]\n"
-               "   [--scale=<image scale greater or equal to 1, try 1.3 for example>]\n"
-               "   [--try-flip]\n"
-               "   [filename|camera_index]\n\n"
-            "see facedetect.cmd for one call:\n"
-            "./facedetect --cascade=\"data/haarcascades/haarcascade_frontalface_alt.xml\" --nested-cascade=\"data/haarcascades/haarcascade_eye_tree_eyeglasses.xml\" --scale=1.3\n\n"
-            "During execution:\n\tHit any key to quit.\n"
-            "\tUsing OpenCV version " << CV_VERSION << "\n" << endl;
+    cout << " For debug \n" << endl;
 }
 
 void *Sequencer(void *threadp)
 {
 	printf("Here seq\n");
     	struct timeval current_time_val;
-    	struct timespec delay_time = {0,400000000}; // delay for 100 msec, 10 Hz
+    	struct timespec delay_time = {0,300000000}; // delay for 100 msec, 10 Hz
     	struct timespec remaining_time;
 
     	double current_time;
@@ -265,10 +253,10 @@ void *Service2(void *threadp)
 	    	// printf("WCET of service 1 is %d \n", milliseconds);
             	if (TimeforService > WCET2)
 		{
-		 	WCET2 = TimeforService;
+			WCET2 = TimeforService;
 		}
-		    //pthread_exit(NULL);
-		//sem_post(&semS3);
+		// pthread_exit(NULL);
+		// sem_post(&semS3);
 	}
 }
 
@@ -459,7 +447,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
     resize( gray, smallImg, Size(), fx, fx, INTER_LINEAR_EXACT );
     equalizeHist( smallImg, smallImg );
 
-    //t = (double)getTickCount();
+    t = (double)getTickCount();
     cascade.detectMultiScale( smallImg, faces,
         1.1, 2, 0
         //|CASCADE_FIND_BIGGEST_OBJECT
@@ -480,7 +468,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
             faces.push_back(Rect(smallImg.cols - r->x - r->width, r->y, r->width, r->height));
         }
     }
-    //t = (double)getTickCount() - t;
+    t = (double)getTickCount() - t;
     //printf( "detection time = %g ms\n", t*1000/getTickFrequency());
     if(faces.size() <= 0)
     {
@@ -550,7 +538,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
     resize( gray, smallImg, Size(), fx, fx, INTER_LINEAR_EXACT );
     equalizeHist( smallImg, smallImg );
 
-    //t = (double)getTickCount();
+    t = (double)getTickCount();
     nestedCascade.detectMultiScale( smallImg, faces3,
         1.1, 2, 0
         //|CASCADE_FIND_BIGGEST_OBJECT
@@ -571,7 +559,7 @@ void detectAndDraw( Mat& img, CascadeClassifier& cascade,
             faces3.push_back(Rect(smallImg.cols - r->x - r->width, r->y, r->width, r->height));
         }
     }
-    //t = (double)getTickCount() - t;
+    t = (double)getTickCount() - t;
     //printf( "detection time = %g ms\n", t*1000/getTickFrequency());
     if(faces3.size() <= 0)
     {
